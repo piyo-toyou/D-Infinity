@@ -204,8 +204,13 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 rse = 0.00
                                 sse = s1se
                         else:
-                            rse = 0.00
-                            sse = s1se
+                            s0se = (arr[i,j]-arr[i+1,j+1])/dxy
+                            if s0se > 0:
+                                rse = dtan
+                                sse = s0se
+                            else:
+                                rse = 0.00
+                                sse = s1se
             
                         s1es = (arr[i,j]-arr[i,j+1])/dx
                         s2es = (arr[i,j+1]-arr[i+1,j+1])/dy
