@@ -62,14 +62,14 @@ class FlowDirection(QgsProcessingAlgorithm):
         my_band = datasete.GetRasterBand(band)
 
         my_array = my_band.ReadAsArray()
-        returnarrayS = np.zeros((Xsize, Ysize))
-        returnarrayD = np.zeros((Xsize, Ysize))
+        returnarrayS = np.zeros((Ysize, Xsize))
+        returnarrayD = np.zeros((Ysize, Xsize))
 
         def DInfinity(arr, i, j):
-            if i-1 >= 0 and j-1 >= 0 and i+1 < Xsize and j+1 < Ysize:
+            if i-1 >= 0 and j-1 >= 0 and i+1 < Ysize and j+1 < Xsize:
                 if arr[i-1][j-1] < -999 or arr[i-1][j+1] < -999 or arr[i+1][j-1] < -999 or arr[i+1][j+1] < -999:
                     return np.nan, np.nan
-                else:  
+                else:
                     try:
                         b = [[0,1],[1,-1],[1,1],[2,-1],[2,1],[3,-1],[3,1],[4,-1]]
                         
@@ -82,7 +82,7 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 sen = (arr[i,j]-arr[i-1,j+1])/dxy
                             elif ren_temp > 0:
                                 ren = ren_temp
-                                sen = (pow(s1en,2)+pow(s2en,2))**0.5
+                                sen = sqrt(pow(s1en,2)+pow(s2en,2))
                             else:
                                 ren = 0.00
                                 sen = s1en
@@ -104,7 +104,7 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 sne = (arr[i,j]-arr[i-1,j+1])/dxy
                             elif rne_temp > 0:
                                 rne = rne_temp
-                                sne = (pow(s1ne,2)+pow(s2ne,2))**0.5
+                                sne = sqrt(pow(s1ne,2)+pow(s2ne,2))
                             else:
                                 rne = 0.00
                                 sne = s1ne
@@ -121,7 +121,7 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 snw = (arr[i,j]-arr[i-1,j-1])/dxy
                             elif rnw_temp > 0:
                                 rnw = rnw_temp
-                                snw = (pow(s1nw,2)+pow(s2nw,2))**0.5
+                                snw = sqrt(pow(s1nw,2)+pow(s2nw,2))
                             else:
                                 rnw = 0.00
                                 snw = s1nw
@@ -143,7 +143,7 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 swn = (arr[i,j]-arr[i-1,j-1])/dxy
                             elif rwn_temp > 0:
                                 rwn = rwn_temp
-                                swn = (pow(s1wn,2)+pow(s2wn,2))**0.5
+                                swn = sqrt(pow(s1wn,2)+pow(s2wn,2))
                             else:
                                 rwn = 0.00
                                 swn = s1wn
@@ -160,7 +160,7 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 sws = (arr[i,j]-arr[i+1,j-1])/dxy
                             elif rws_temp > 0:
                                 rws = rws_temp
-                                sws = (pow(s1ws,2)+pow(s2ws,2))**0.5
+                                sws = sqrt(pow(s1ws,2)+pow(s2ws,2))
                             else:
                                 rws = 0.00
                                 sws = s1ws
@@ -177,7 +177,7 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 ssw = (arr[i,j]-arr[i+1,j-1])/dxy
                             elif rsw_temp > 0:
                                 rsw = rsw_temp
-                                ssw = (pow(s1sw,2)+pow(s2sw,2))**0.5
+                                ssw = sqrt(pow(s1sw,2)+pow(s2sw,2))
                             else:
                                 rsw = 0.00
                                 ssw = s1sw
@@ -199,7 +199,7 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 sse = (arr[i,j]-arr[i+1,j+1])/dxy
                             elif rse_temp > 0:
                                 rse = rse_temp
-                                sse = (pow(s1se,2)+pow(s2se,2))**0.5
+                                sse = sqrt(pow(s1se,2)+pow(s2se,2))
                             else:
                                 rse = 0.00
                                 sse = s1se
@@ -216,7 +216,7 @@ class FlowDirection(QgsProcessingAlgorithm):
                                 ses = (arr[i,j]-arr[i+1,j+1])/dxy
                             elif res_temp > 0:
                                 res = res_temp
-                                ses = (pow(s1es,2)+pow(s2es,2))**0.5
+                                ses = sqrt(pow(s1es,2)+pow(s2es,2))
                             else:
                                 res = 0.00
                                 ses = s1es
@@ -248,8 +248,8 @@ class FlowDirection(QgsProcessingAlgorithm):
                 return np.nan, np.nan
 
         #calculation
-        for i in range(0, Xsize):
-            for j in range(0, Ysize):
+        for i in range(0, Ysize):
+            for j in range(0, Xsize):
                 args = DInfinity(my_array, i, j)
                 returnarrayS[i][j] = args[0]
                 returnarrayD[i][j] = args[1]
@@ -269,5 +269,5 @@ class FlowDirection(QgsProcessingAlgorithm):
         out_tiff_D.GetRasterBand(1).WriteArray(returnarrayD)
         out_tiff_D.FlushCache()
 
-        return {self.OUTPUT: output_S}
+        return {self.OUTPUT_S: output_S, self.OUTPUT_D: output_D}
 
