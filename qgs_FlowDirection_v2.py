@@ -55,7 +55,7 @@ class FlowDirection(QgsProcessingAlgorithm):
         Xsize = datasete.RasterXSize
         Ysize = datasete.RasterYSize
         GT = datasete.GetGeoTransform()
-        dx, dy = GT[1], GT[5]
+        dx, dy = abs(GT[1]), abs(GT[5])
         dxy = sqrt(pow(dx,2)+pow(dy,2))
         dtan = atan(dx/dy)
         CSR = datasete.GetProjection()
