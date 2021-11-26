@@ -15,15 +15,15 @@ dxy = sqrt(pow(dx,2)+pow(dy,2))
 dtan = atan(dx/dy)
 Ysize = myarray.shape[0]
 Xsize = myarray.shape[1]
-returnarrayS = np.zeros((Ysize, Xsize))
-returnarrayD = np.ones((Ysize, Xsize))
-returnarrayF = np.zeros((Ysize, Xsize))
+returnarrayS = np.zeros(myarray.shape)
+returnarrayD = np.ones(myarray.shape)
+returnarrayF = np.zeros(myarray.shape)
 
 def Around(arr, i, j):
     h_above = np.array((arr[i-1][j-1:j+2]))
-    h_mid = np.array((arr[i][j-1], arr[i][j+1]))
+    h_mid = np.array((arr[i][j-1], np.nan, arr[i][j+1]))
     h_below = np.array((arr[i+1][j-1:j+2]))
-    return np.hstack((h_above, h_mid, h_below))
+    return np.vstack((h_above, h_mid, h_below))
 
 def Flag(arr, i, j):
     if i-1 >= 0 and j-1 >= 0 and i+1 < Ysize and j+1 < Xsize:
@@ -43,36 +43,37 @@ def Flag(arr, i, j):
     else:
         return np.nan
 
-def DInfinity(arr, i, j):
+def DInfinity(ij):
+    i, j = ij
     try:
         b = [[0,1],[1,-1],[1,1],[2,-1],[2,1],[3,-1],[3,1],[4,-1]]
         
-        s1en = (arr[i,j]-arr[i,j+1])/dx
-        s2en = (arr[i,j+1]-arr[i-1,j+1])/dy
-        s0en = (arr[i,j]-arr[i-1,j+1])/dxy
-        s1ne = (arr[i,j]-arr[i-1,j])/dx 
-        s2ne = (arr[i-1,j]-arr[i-1,j+1])/dy
-        s1nw = (arr[i,j]-arr[i-1,j])/dx
-        s2nw = (arr[i-1,j]-arr[i-1,j-1])/dy
-        s0nw = (arr[i,j]-arr[i-1,j-1])/dxy
-        s1wn = (arr[i,j]-arr[i,j-1])/dx
-        s2wn = (arr[i,j-1]-arr[i-1,j-1])/dy
-        s1ws = (arr[i,j]-arr[i,j-1])/dx
-        s2ws = (arr[i,j-1]-arr[i+1,j-1])/dy
-        s0ws = (arr[i,j]-arr[i+1,j-1])/dxy
-        s1sw = (arr[i,j]-arr[i+1,j])/dx
-        s2sw = (arr[i+1,j]-arr[i+1,j-1])/dy
-        s1se = (arr[i,j]-arr[i+1,j])/dx
-        s2se = (arr[i+1,j]-arr[i+1,j+1])/dy
-        s0se = (arr[i,j]-arr[i+1,j+1])/dxy
-        s1es = (arr[i,j]-arr[i,j+1])/dx
-        s2es = (arr[i,j+1]-arr[i+1,j+1])/dy
+        s1en = (myarray[i,j]-myarray[i,j+1])/dx
+        s2en = (myarray[i,j+1]-myarray[i-1,j+1])/dy
+        s0en = (myarray[i,j]-myarray[i-1,j+1])/dxy
+        s1ne = (myarray[i,j]-myarray[i-1,j])/dx 
+        s2ne = (myarray[i-1,j]-myarray[i-1,j+1])/dy
+        s1nw = (myarray[i,j]-myarray[i-1,j])/dx
+        s2nw = (myarray[i-1,j]-myarray[i-1,j-1])/dy
+        s0nw = (myarray[i,j]-myarray[i-1,j-1])/dxy
+        s1wn = (myarray[i,j]-myarray[i,j-1])/dx
+        s2wn = (myarray[i,j-1]-myarray[i-1,j-1])/dy
+        s1ws = (myarray[i,j]-myarray[i,j-1])/dx
+        s2ws = (myarray[i,j-1]-myarray[i+1,j-1])/dy
+        s0ws = (myarray[i,j]-myarray[i+1,j-1])/dxy
+        s1sw = (myarray[i,j]-myarray[i+1,j])/dx
+        s2sw = (myarray[i+1,j]-myarray[i+1,j-1])/dy
+        s1se = (myarray[i,j]-myarray[i+1,j])/dx
+        s2se = (myarray[i+1,j]-myarray[i+1,j+1])/dy
+        s0se = (myarray[i,j]-myarray[i+1,j+1])/dxy
+        s1es = (myarray[i,j]-myarray[i,j+1])/dx
+        s2es = (myarray[i,j+1]-myarray[i+1,j+1])/dy
 
         #1 east -> north
         if s1en > 0:
             ren_temp = atan(s2en/s1en)
             if ren_temp > dtan:
-                ren = dtan; sen = (arr[i,j]-arr[i-1,j+1])/dxy
+                ren = dtan; sen = (myarray[i,j]-myarray[i-1,j+1])/dxy
             elif ren_temp > 0:
                 ren = ren_temp; sen = sqrt(pow(s1en,2)+pow(s2en,2))
             else:
@@ -87,7 +88,7 @@ def DInfinity(arr, i, j):
         if s1ne > 0:
             rne_temp = atan(s2ne/s1ne)
             if rne_temp > dtan:
-                rne = dtan; sne = (arr[i,j]-arr[i-1,j+1])/dxy
+                rne = dtan; sne = (myarray[i,j]-myarray[i-1,j+1])/dxy
             elif rne_temp > 0:
                 rne = rne_temp; sne = sqrt(pow(s1ne,2)+pow(s2ne,2))
             else:
@@ -102,7 +103,7 @@ def DInfinity(arr, i, j):
         if s1nw > 0:
             rnw_temp = atan(s2nw/s1nw)
             if rnw_temp > dtan:
-                rnw = dtan; snw = (arr[i,j]-arr[i-1,j-1])/dxy
+                rnw = dtan; snw = (myarray[i,j]-myarray[i-1,j-1])/dxy
             elif rnw_temp > 0:
                 rnw = rnw_temp; snw = sqrt(pow(s1nw,2)+pow(s2nw,2))
             else:
@@ -117,7 +118,7 @@ def DInfinity(arr, i, j):
         if s1wn > 0:
             rwn_temp = atan(s2wn/s1wn)
             if rwn_temp > dtan:
-                rwn = dtan; swn = (arr[i,j]-arr[i-1,j-1])/dxy
+                rwn = dtan; swn = (myarray[i,j]-myarray[i-1,j-1])/dxy
             elif rwn_temp > 0:
                 rwn = rwn_temp; swn = sqrt(pow(s1wn,2)+pow(s2wn,2))
             else:
@@ -132,7 +133,7 @@ def DInfinity(arr, i, j):
         if s1ws > 0:
             rws_temp = atan(s2ws/s1ws)
             if rws_temp > dtan:
-                rws = dtan; sws = (arr[i,j]-arr[i+1,j-1])/dxy
+                rws = dtan; sws = (myarray[i,j]-myarray[i+1,j-1])/dxy
             elif rws_temp > 0:
                 rws = rws_temp; sws = sqrt(pow(s1ws,2)+pow(s2ws,2))
             else:
@@ -147,7 +148,7 @@ def DInfinity(arr, i, j):
         if s1sw > 0:
             rsw_temp = atan(s2sw/s1sw)
             if rsw_temp > dtan:
-                rsw = dtan; ssw = (arr[i,j]-arr[i+1,j-1])/dxy
+                rsw = dtan; ssw = (myarray[i,j]-myarray[i+1,j-1])/dxy
             elif rsw_temp > 0:
                 rsw = rsw_temp; ssw = sqrt(pow(s1sw,2)+pow(s2sw,2))
             else:
@@ -162,7 +163,7 @@ def DInfinity(arr, i, j):
         if s1se > 0:
             rse_temp = atan(s2se/s1se)
             if rse_temp > dtan:
-                rse = dtan; sse = (arr[i,j]-arr[i+1,j+1])/dxy
+                rse = dtan; sse = (myarray[i,j]-myarray[i+1,j+1])/dxy
             elif rse_temp > 0:
                 rse = rse_temp; sse = sqrt(pow(s1se,2)+pow(s2se,2))
             else:
@@ -177,7 +178,7 @@ def DInfinity(arr, i, j):
         if s1es > 0:
             res_temp = atan(s2es/s1es)
             if res_temp > dtan:
-                res = dtan; ses = (arr[i,j]-arr[i+1,j+1])/dxy
+                res = dtan; ses = (myarray[i,j]-myarray[i+1,j+1])/dxy
             elif res_temp > 0:
                 res = res_temp; ses = sqrt(pow(s1es,2)+pow(s2es,2))
             else:
@@ -200,15 +201,22 @@ def DInfinity(arr, i, j):
         else:
             sdeg = 0.00
             rg = -1
-        return sdeg, rg
+        return i, j, sdeg, rg
     except:
-        return np.nan, np.nan
+        return i, j, np.nan, np.nan
+
+def Dinfinity_Receive(args):
+    i, j, s, d = args
+    returnarrayS[i][j] = s
+    returnarrayD[i][j] = d
 
 def Sink(dem, flag, dinf, i, j):
     dem_copy = copy(dem)
-    flag_check = np.array((1, 2))
-    target_area = np.zeros((Ysize, Xsize))
-    if any((w in Around(flag, i, j) for w in flag_check)):
+    target_area = np.zeros((Ysize, Xsize), dtype=int)
+    target_area[i][j] = 1
+    my_around = Around(flag, i, j)
+    if any((1 in my_around)):
+        ind_temp = np.argwhere(my_around == 1)
         pass
     else:
         dinf[i][j] = 300
@@ -223,14 +231,12 @@ for i, j in np.ndindex(myarray.shape):
     returnarrayF[i][j] = Flag(myarray, i, j)
 
 #Regular cells
-for i, j in np.argwhere(returnarrayF == 0):
-    args = DInfinity(myarray, i, j)
-    returnarrayS[i][j] = args[0]
-    returnarrayD[i][j] = args[1]
+args = map(DInfinity, np.argwhere(returnarrayF == 0))
+map(Dinfinity_Receive, args)
 
 #Sink cells
-for i, j in np.argwhere(returnarrayF == 2):
-    Sink(myarray, returnarrayF, returnarrayD, i, j)
+#for i, j in np.argwhere(returnarrayF == 2):
+#    Sink(myarray, returnarrayF, returnarrayD, i, j)
 
 #Visualization
 cmap = cm.cool
