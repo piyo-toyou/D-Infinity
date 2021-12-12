@@ -16,7 +16,7 @@ dtan = atan(dx/dy)
 Ysize = myarray.shape[0]
 Xsize = myarray.shape[1]
 returnarrayS = np.zeros(myarray.shape)
-returnarrayD = np.ones(myarray.shape)
+returnarrayD = np.full(myarray.shape, -1.0)
 returnarrayF = np.zeros(myarray.shape)
 
 def Around(arr, i, j):
@@ -266,3 +266,8 @@ custom_cool = colors.ListedColormap(cmap_data)
 pyplot.imshow(returnarrayD, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
+
+"""
+out_df  = pd.DataFrame(returnarrayD)
+out_df.to_csv("C:/Users/S2212357/Documents/Z9_Training/QGIS/WaterFlow/FlowDirection/Nishiharamura_FD_5m.csv", header=None, index=None)
+"""
