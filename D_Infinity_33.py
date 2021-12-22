@@ -229,15 +229,14 @@ def Sink(dem, flag, dinf, i, j):
         min_value = np.min(my_around)
         min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
         if not r:   GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
-        else:       GMI = target_area[min_idx[0]] + min_idx[1:3] - np.array((1, 1))
+        else:       GMI = target_area[min_idx[0]//3] + ((min_idx[0]%3, min_idx[1])) - np.array((1, 1))
         print(r)
         print(target_area)
         print(GMI)
         target_area = np.vstack((target_area, GMI))
         flag[GMI[0], GMI[1]] = 1
         dem_copy[i, j] = min_value # 窪地埋め処理
-
-        my_around = np.stack((my_around, Around(dem_copy, GMI[0], GMI[1])))
+        my_around = np.vstack((my_around, Around(dem_copy, GMI[0], GMI[1])))
         if (my_around < min_value).any(): # 周囲の点から流出点を探す
             break
     out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
