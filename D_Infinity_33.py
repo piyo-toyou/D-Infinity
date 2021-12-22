@@ -221,26 +221,30 @@ def D8(t):
 
 def Sink(dem, flag, dinf, i, j):
     dem_copy = copy(dem)
-    target_area = np.zeros((Ysize, Xsize), dtype=int)
-    target_area[i][j] = 1
+    target_area = np.array((i, j))
     my_around = Around(dem, i, j)
+    for r in range(2):
+        # 複数点を捉えるために、np.whereを使用する方が厳密
+        # 対象領域周囲から、最小標高点を探す
+        min_value = np.min(my_around)
+        min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
+        if not r:   GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
+        else:       GMI = target_area[min_idx[0]] + min_idx[1:3] - np.array((1, 1))
+        print(r)
+        print(target_area)
+        print(GMI)
+        target_area = np.vstack((target_area, GMI))
+        flag[GMI[0], GMI[1]] = 1
+        dem_copy[i, j] = min_value # 窪地埋め処理
 
-    # 複数点を捉えるために、np.whereを使用する方が厳密
-    # 対象領域周囲から、最小標高点を探す
-    min_value = np.min(my_around)
-    min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
-    GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
-    target_area[GMI[0], GMI[1]] = 1
-    flag[GMI[0], GMI[1]] = 1
-    dem_copy[i, j] = min_value # 窪地埋め処理
-
-    my_around = np.stack((my_around, Around(dem_copy, GMI[0], GMI[1])))
-    if (my_around < min_value).any(): # 周囲の点から流出点を探す
-        out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
-        GOI = GMI + out_idx[1:3] - np.array((1, 1)) # global out index
-        flag[GOI[0], GOI[1]] = 1.5
-        dinf[i][j] = D8(min_idx - np.array((1, 1)))
-        dinf[GMI[0], GMI[1]] = D8(out_idx[1:3] - np.array((1, 1)))
+        my_around = np.stack((my_around, Around(dem_copy, GMI[0], GMI[1])))
+        if (my_around < min_value).any(): # 周囲の点から流出点を探す
+            break
+    out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
+    GOI = GMI + out_idx[1:3] - np.array((1, 1)) # global out index
+    flag[GOI[0], GOI[1]] = 1.5
+    dinf[i][j] = D8(min_idx - np.array((1, 1)))
+    dinf[GMI[0], GMI[1]] = D8(out_idx[1:3] - np.array((1, 1)))
 
 def Flat(arr, i, j):
     pass

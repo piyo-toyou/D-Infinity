@@ -10,7 +10,7 @@ import pandas as pd
 from matplotlib import pyplot, cm, colors
 
 #input parameters
-csv_path = "C:/Users/S2212357/Documents/Z9_Training/QGIS/WaterFlow/FlowDirection/Nishiharamura_FD_5m.csv"
+csv_path = "Nishiharamura_FD_5m.csv"
 test_path = "C:/Users/S2212357/Documents/Z9_Training/QGIS/WaterFlow/FlowDirection/test_csv.csv"
 df = pd.read_csv(csv_path, sep=",", header=None, index_col=None)
 myarrayFD = df.values
