@@ -1,6 +1,5 @@
 
 import numpy as np
-from numpy.lib.function_base import copy
 import pandas as pd
 from matplotlib import pyplot, cm, colors
 from math import degrees, atan, pi, sqrt
@@ -19,19 +18,37 @@ returnarrayS = np.zeros(myarray.shape)
 returnarrayD = np.full(myarray.shape, -1.0)
 returnarrayF = np.zeros(myarray.shape)
 
-def Around(arr, i, j):
-    h_above = np.array((arr[i-1][j-1:j+2]))
-    h_mid = np.array((arr[i][j-1], 9999, arr[i][j+1]))
-    h_below = np.array((arr[i+1][j-1:j+2]))
-    return np.vstack((h_above, h_mid, h_below))
+def Around(arr, X):
+    if X.size == 2:
+        i, j = X
+        h_above = arr[i-1][j-1:j+2]
+        h_mid = np.array((arr[i][j-1], 9999, arr[i][j+1]))
+        h_below = arr[i+1][j-1:j+2]
+        return np.vstack((h_above, h_mid, h_below))
+    else:
+        temp_around = np.arange(3)
+        for x1, x2 in enumerate(X):
+            X_d1 = X - X[x1] # 対象範囲との被りを検出
+            X_d2 = X_d1[np.all(-1<=X_d1, axis=1)]
+            X_d3 = X_d2[np.all(X_d2<=1, axis=1)]
+
+            i, j = x2 # 周囲の標高値を抜き出し
+            h_above = arr[i-1][j-1:j+2]
+            h_mid = np.array((arr[i][j-1], 9999, arr[i][j+1]))
+            h_below = arr[i+1][j-1:j+2]
+            h_marge = np.vstack((h_above, h_mid, h_below))
+            for s, t in X_d3:
+                h_marge[s+1, t+1] = 9999
+            temp_around = np.vstack((temp_around, h_marge))
+        return temp_around[1:]
 
 def Flag(arr, i, j):
     if i-1 >= 0 and j-1 >= 0 and i+1 < Ysize and j+1 < Xsize:
-        if (Around(arr, i, j) < np.array((-999))).any():
+        if (Around(arr, np.array((i, j))) < np.array((-999))).any():
             return np.nan
         try:
             h0 = arr[i][j]
-            h_around = Around(arr, i, j)
+            h_around = Around(arr, np.array((i, j)))
             if (h0 > h_around).any():
                 return 0 #Dinfinity
             elif (h0 == h_around).any():
@@ -220,24 +237,23 @@ def D8(t):
     return d8
 
 def Sink(dem, flag, dinf, i, j):
-    dem_copy = copy(dem)
+    dem_copy = dem.copy()
     target_area = np.array((i, j))
-    my_around = Around(dem, i, j)
-    for r in range(2):
+    my_around = Around(dem, target_area)
+    for r in range(10):
         # 複数点を捉えるために、np.whereを使用する方が厳密
         # 対象領域周囲から、最小標高点を探す
         min_value = np.min(my_around)
         min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
         if not r:   GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
         else:       GMI = target_area[min_idx[0]//3] + ((min_idx[0]%3, min_idx[1])) - np.array((1, 1))
-        print(r)
-        print(target_area)
-        print(GMI)
         target_area = np.vstack((target_area, GMI))
         flag[GMI[0], GMI[1]] = 1
-        dem_copy[i, j] = min_value # 窪地埋め処理
-        my_around = np.vstack((my_around, Around(dem_copy, GMI[0], GMI[1])))
+        for u, v in target_area:
+            dem_copy[u, v] = min_value # 窪地埋め処理
+        my_around = Around(dem_copy, target_area) # 対象領域の周囲を更新
         if (my_around < min_value).any(): # 周囲の点から流出点を探す
+            print(i, j, r, "break")
             break
     out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
     GOI = GMI + out_idx[1:3] - np.array((1, 1)) # global out index
@@ -266,11 +282,11 @@ cmap = cm.cool
 cmap_data = cmap(np.arange(cmap.N))
 cmap_data[0, 3] = 0
 custom_cool = colors.ListedColormap(cmap_data)
-pyplot.imshow(returnarrayD, cmap=custom_cool)
+pyplot.imshow(returnarrayF, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
 """
 out_df  = pd.DataFrame(returnarrayD)
-out_df.to_csv("Nishiharamura_FD_5m.csv", header=None, index=None)
+out_df.to_csv("Nishiharamura_FD_5m_33.csv", header=None, index=None)
 """
