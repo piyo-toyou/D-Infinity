@@ -227,7 +227,22 @@ def Dinfinity_Receive(args):
     i, j, s, d = args
     returnarrayS[i][j], returnarrayD[i][j] = s, d
 
-def D8(t):
+def D8(t_area, t_idx, t_point, out_point): # 対象範囲全体、番号、座標と、流出点座標
+    out_check1 = out_point - t_point
+    if -1 <= out_check1[0] <= 1 and -1 <= out_check1[1] <= 1:
+        t = np.squeeze(out_check1)
+    else:
+        T_d1 = np.delete(t_area, t_idx, 0) # target diffrence
+        T_d1 = T_d1 - t_point
+        T_d1 = T_d1[np.all(-1<=T_d1, axis=1)]
+        T_d1 = T_d1[np.all(T_d1<=1, axis=1)] # 隣接する範囲を探索
+        if T_d1.size == 2: # 1箇所と接する場合
+            t = np.squeeze(T_d1)
+        else: # 複数個所と接する場合
+            GT_d1 = T_d1 + t_point # global target diffrence
+            GT_d2 = GT_d1 - out_point
+            GT_d3 = np.array([np.linalg.norm(i) for i in GT_d2])
+            t = T_d1[np.argmin(GT_d3)]
     if t[0] == -1:
         d8 = 90 + t[1] * -45
     elif t[0] == 0:
@@ -240,12 +255,12 @@ def Sink(dem, flag, dinf, i, j):
     dem_copy = dem.copy()
     target_area = np.array((i, j))
     my_around = Around(dem, target_area)
-    for r in range(10):
+    for p in range(10):
         # 複数点を捉えるために、np.whereを使用する方が厳密
         # 対象領域周囲から、最小標高点を探す
         min_value = np.min(my_around)
         min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
-        if not r:   GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
+        if not p:   GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
         else:       GMI = target_area[min_idx[0]//3] + ((min_idx[0]%3, min_idx[1])) - np.array((1, 1))
         target_area = np.vstack((target_area, GMI))
         flag[GMI[0], GMI[1]] = 1
@@ -253,13 +268,13 @@ def Sink(dem, flag, dinf, i, j):
             dem_copy[u, v] = min_value # 窪地埋め処理
         my_around = Around(dem_copy, target_area) # 対象領域の周囲を更新
         if (my_around < min_value).any(): # 周囲の点から流出点を探す
-            print(i, j, r, "break")
+            print(i, j, p, "break")
             break
     out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
-    GOI = GMI + out_idx[1:3] - np.array((1, 1)) # global out index
+    GOI = target_area[out_idx[0]//3] + ((out_idx[0]%3, out_idx[1])) - np.array((1, 1)) # global out index
     flag[GOI[0], GOI[1]] = 1.5
-    dinf[i][j] = D8(min_idx - np.array((1, 1)))
-    dinf[GMI[0], GMI[1]] = D8(out_idx[1:3] - np.array((1, 1)))
+    for q1, q2 in enumerate(target_area):
+        dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
 
 def Flat(arr, i, j):
     pass
@@ -282,11 +297,10 @@ cmap = cm.cool
 cmap_data = cmap(np.arange(cmap.N))
 cmap_data[0, 3] = 0
 custom_cool = colors.ListedColormap(cmap_data)
-pyplot.imshow(returnarrayF, cmap=custom_cool)
+pyplot.imshow(returnarrayD, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
-"""
+
 out_df  = pd.DataFrame(returnarrayD)
 out_df.to_csv("Nishiharamura_FD_5m_33.csv", header=None, index=None)
-"""
