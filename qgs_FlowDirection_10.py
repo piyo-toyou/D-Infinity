@@ -308,6 +308,9 @@ class FlowDirection(QgsProcessingAlgorithm):
                 min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
                 if not p:   GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
                 else:       GMI = target_area[min_idx[0]//3] + ((min_idx[0]%3, min_idx[1])) - np.array((1, 1))
+                if 0 in GMI or Ysize-1 == GMI[0] or Xsize-1 == GMI[1]:
+                    print(i, j, p, "edge break")
+                    break
                 target_area = np.vstack((target_area, GMI))
                 flag[GMI[0], GMI[1]] = 1
                 for u, v in target_area:
@@ -319,8 +322,15 @@ class FlowDirection(QgsProcessingAlgorithm):
             out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
             GOI = target_area[out_idx[0]//3] + ((out_idx[0]%3, out_idx[1])) - np.array((1, 1)) # global out index
             flag[GOI[0], GOI[1]] = 1.5
-            for q1, q2 in enumerate(target_area):
-                dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
+            try:
+                for q1, q2 in enumerate(target_area):
+                    dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
+            except:
+                GOI = target_area + out_idx - np.array((1, 1))
+                flag[GOI[0], GOI[1]] = 1.5
+                target_area = target_area[np.newaxis, :]
+                for q1, q2 in enumerate(target_area):
+                    dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
 
         def Flat(arr, i, j):
             pass

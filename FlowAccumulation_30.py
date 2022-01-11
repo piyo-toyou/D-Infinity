@@ -154,9 +154,9 @@ while True:
         else:
             pass
     loop += 1
-    if loop % 100 == 0:
+    if loop % 1000 == 0:
         print(loop)
-    if loop == 1000:
+    if loop == 10000:
         break
 
 pyplot.imshow(returnarrayFA, cmap=cm.cool)
