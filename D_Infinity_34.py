@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib import pyplot, cm, colors
 from math import degrees, atan, pi, sqrt
 
-csv_path = "Nishiharamura_DEM_5m_Fill.csv"
+csv_path = "Nishiharamura_clip4DEM_5m_Fill.csv"
 df = pd.read_csv(csv_path, sep=",", header=0,index_col=0)
 myarray = df.values
 
