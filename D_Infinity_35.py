@@ -293,10 +293,20 @@ def Flat(dem, flag, dinf, i, j):
         flag_around = Around(flag, target_area)
         if 1 in flag_around:
             flat_area = np.where(flag_around == 1)
-            flat_area_idx = np.vstack((flat_area[0],flat_area[1])).T
+            flat_area_idx = np.vstack((flat_area[0], flat_area[1])).T
+            for s in range(len(flat_area_idx)):
+                if target_area.size == 2:
+                    G = target_area
+                else:
+                    G = target_area[flat_area_idx[s][0]//3]
+                F = ((flat_area_idx[s][0]%3, flat_area_idx[s][1]))
+                I = np.array((1, 1))
+                GFI = G + F - I # global flat index
+                target_area = np.vstack((target_area, GFI))
         else:
             break
     my_around = Around(dem, target_area)
+    return target_area
 
 #calculation
 #Flag
@@ -308,6 +318,8 @@ args = map(DInfinity, np.argwhere(returnarrayF == 0))
 for x in args:  Dinfinity_Receive(x)
 
 #Flat cells
+for i, j in np.argwhere(returnarrayF == 1):
+    print(Flat(myarray, returnarrayF, returnarrayD, i, j))
 
 #Sink cells
 for i, j in np.argwhere(returnarrayF == 2):
