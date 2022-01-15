@@ -10,7 +10,7 @@ import pandas as pd
 from matplotlib import pyplot, cm, colors
 
 #input parameters
-csv_path = "Nishiharamura_FD_5m_34.csv"
+csv_path = "Nishiharamura_FD_5m_35.csv"
 test_path = "C:/Users/S2212357/Documents/Z9_Training/QGIS/WaterFlow/FlowDirection/test_csv.csv"
 df = pd.read_csv(csv_path, sep=",", header=None, index_col=None)
 myarrayFD = df.values
@@ -154,9 +154,9 @@ while True:
         else:
             pass
     loop += 1
-    if loop % 1000 == 0:
+    if loop % 100 == 0:
         print(loop)
-    if loop == 10000:
+    if loop == 1000:
         break
 
 pyplot.imshow(returnarrayFA, cmap=cm.cool)

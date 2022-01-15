@@ -266,7 +266,6 @@ def Sink(dem, flag, dinf, i, j):
             print(i, j, p, "edge break")
             break
         target_area = np.vstack((target_area, GMI))
-        flag[GMI[0], GMI[1]] = 1.75
         for u, v in target_area:
             dem_copy[u, v] = min_value # 窪地埋め処理
         my_around = Around(dem_copy, target_area) # 対象領域の周囲を更新
@@ -275,16 +274,16 @@ def Sink(dem, flag, dinf, i, j):
             break
     out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
     GOI = target_area[out_idx[0]//3] + ((out_idx[0]%3, out_idx[1])) - np.array((1, 1)) # global out index
-    flag[GOI[0], GOI[1]] = 1.5
     try:
         for q1, q2 in enumerate(target_area):
             dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
+            flag[q2[0], q2[1]] = 1.75
     except:
         GOI = target_area + out_idx - np.array((1, 1))
-        flag[GOI[0], GOI[1]] = 1.5
         target_area = target_area[np.newaxis, :]
         for q1, q2 in enumerate(target_area):
             dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
+            flag[q2[0], q2[1]] = 1.75
 
 def Flat(dem, flag, dinf, i, j):
     dem_copy = dem.copy()
@@ -305,8 +304,38 @@ def Flat(dem, flag, dinf, i, j):
                 target_area = np.vstack((target_area, GFI))
         else:
             break
+    if target_area.size >= 4:
+        target_area = np.unique(target_area, axis=0)
     my_around = Around(dem, target_area)
-    return target_area
+    for p in range(100):
+        # 複数点を捉えるために、np.whereを使用する方が厳密
+        # 対象領域周囲から、最小標高点を探す
+        min_value = np.min(my_around)
+        min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
+        if target_area.size == 2:   GMI = target_area + min_idx - np.array((1, 1)) # global min index
+        else:       GMI = target_area[min_idx[0]//3] + ((min_idx[0]%3, min_idx[1])) - np.array((1, 1))
+        if 0 in GMI or Ysize-1 == GMI[0] or Xsize-1 == GMI[1]:
+            print(i, j, p, "edge break")
+            break
+        target_area = np.vstack((target_area, GMI))
+        for u, v in target_area:
+            dem_copy[u, v] = min_value # 窪地埋め処理
+        my_around = Around(dem_copy, target_area) # 対象領域の周囲を更新
+        if (my_around < min_value).any(): # 周囲の点から流出点を探す
+            print(i, j, p, "break")
+            break
+    out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
+    GOI = target_area[out_idx[0]//3] + ((out_idx[0]%3, out_idx[1])) - np.array((1, 1)) # global out index
+    try:
+        for q1, q2 in enumerate(target_area):
+            dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
+            flag[q2[0], q2[1]] = 0.75
+    except:
+        GOI = target_area + out_idx - np.array((1, 1))
+        target_area = target_area[np.newaxis, :]
+        for q1, q2 in enumerate(target_area):
+            dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
+            flag[q2[0], q2[1]] = 0.75
 
 #calculation
 #Flag
@@ -318,8 +347,13 @@ args = map(DInfinity, np.argwhere(returnarrayF == 0))
 for x in args:  Dinfinity_Receive(x)
 
 #Flat cells
-for i, j in np.argwhere(returnarrayF == 1):
-    print(Flat(myarray, returnarrayF, returnarrayD, i, j))
+while True:
+    if np.argwhere(returnarrayF == 1).size:
+        ij = np.argwhere(returnarrayF == 1)
+        i, j = ij[np.random.choice(ij.shape[0],1)][0]
+    else:
+        break
+    Flat(myarray, returnarrayF, returnarrayD, i, j)
 
 #Sink cells
 for i, j in np.argwhere(returnarrayF == 2):
@@ -330,11 +364,11 @@ cmap = cm.cool
 cmap_data = cmap(np.arange(cmap.N))
 cmap_data[0, 3] = 0
 custom_cool = colors.ListedColormap(cmap_data)
-pyplot.imshow(returnarrayF, cmap=custom_cool)
+pyplot.imshow(returnarrayD, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
 """
 out_df  = pd.DataFrame(returnarrayD)
-out_df.to_csv("Nishiharamura_FD_5m_34.csv", header=None, index=None)
+out_df.to_csv("Nishiharamura_FD_5m_35.csv", header=None, index=None)
 """
