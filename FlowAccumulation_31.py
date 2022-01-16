@@ -19,7 +19,7 @@ returnarrayFA = np.full(myarrayFD.shape, -0.5)
 
 def Zero(arr, i, j):
     if 135 < arr[i,j+1] < 225 or 180 < arr[i-1,j+1] < 270 or 225 < arr[i-1,j] < 315 \
-            or 270 < arr[i-1,j-1] or 315 < arr[i,j-1] or arr[i,j-1] < 45 or 0 < arr[i+1,j-1] < 90 \
+            or 270 < arr[i-1,j-1] or 315 < arr[i,j-1] or 0 <= arr[i,j-1] < 45 or 0 < arr[i+1,j-1] < 90 \
             or 45 < arr[i+1,j] < 135 or 90 < arr[i+1,j+1] < 180: 
         return -1.0
     else:
@@ -32,12 +32,14 @@ def ACM(arr1, arr2, i, j):
         pass
     elif 135 < arr1[i,j+1] < 180 and arr2[i,j+1] > 0:
         d += (arr2[i,j+1]+1)*((arr1[i,j+1]-135)/45)
-    elif 135 < arr1[i,j+1] < 180 and -0.6 < arr2[i,j+1] <= 0:
+    elif 135 < arr1[i,j+1] < 180 and arr2[i,j+1] == 0:
         d += (arr1[i,j+1]-135)/45
     elif 180 <= arr1[i,j+1] < 225 and arr2[i,j+1] > 0:
         d += (arr2[i,j+1]+1)*((225-arr1[i,j+1])/45)
-    elif 180 <= arr1[i,j+1] < 225 and -0.6 < arr2[i,j+1] <= 0:
+    elif 180 <= arr1[i,j+1] < 225 and arr2[i,j+1] == 0:
         d += (225-arr1[i,j+1])/45
+    elif arr1[i,j+1] == -1:
+        pass
     else:
         return False
     
@@ -46,12 +48,14 @@ def ACM(arr1, arr2, i, j):
         pass
     elif 180 < arr1[i-1,j+1] < 225 and arr2[i-1,j+1] > 0:
         d += (arr2[i-1,j+1]+1)*((arr1[i-1,j+1]-180)/45)
-    elif 180 < arr1[i-1,j+1] < 225 and -0.6 < arr2[i-1,j+1] <= 0:
+    elif 180 < arr1[i-1,j+1] < 225 and arr2[i-1,j+1] == 0:
         d += (arr1[i-1,j+1]-180)/45
     elif 225 <= arr1[i-1,j+1] < 270 and arr2[i-1,j+1] > 0:
         d += (arr2[i-1,j+1]+1)*((270-arr1[i-1,j+1])/45)
-    elif 225 <= arr1[i-1,j+1] < 270 and -0.6 < arr2[i-1,j+1] <= 0:
+    elif 225 <= arr1[i-1,j+1] < 270 and arr2[i-1,j+1] == 0:
         d += (270-arr1[i-1,j+1])/45
+    elif arr1[i-1,j+1] == -1:
+        pass
     else:
         return False
     
@@ -60,12 +64,14 @@ def ACM(arr1, arr2, i, j):
         pass
     elif 225 < arr1[i-1,j] < 270 and arr2[i-1,j] > 0:
         d += (arr2[i-1,j]+1)*((arr1[i-1,j]-225)/45)
-    elif 225 < arr1[i-1,j] < 270 and -0.6 < arr2[i-1,j] <= 0:
+    elif 225 < arr1[i-1,j] < 270 and arr2[i-1,j] == 0:
         d += (arr1[i-1,j]-225)/45
     elif 270 <= arr1[i-1,j] < 315 and arr2[i-1,j] > 0:
         d += (arr2[i-1,j]+1)*((315-arr1[i-1,j])/45)
-    elif 270 <= arr1[i-1,j] < 315 and -0.6 < arr2[i-1,j] <= 0:
+    elif 270 <= arr1[i-1,j] < 315 and arr2[i-1,j] == 0:
         d += (315-arr1[i-1,j])/45
+    elif arr1[i-1,j] == -1:
+        pass
     else:
         return False
 
@@ -74,26 +80,30 @@ def ACM(arr1, arr2, i, j):
         pass
     elif 270 < arr1[i-1,j-1] < 315 and arr2[i-1,j-1] > 0:
         d += (arr2[i-1,j-1]+1)*((arr1[i-1,j-1]-270)/45)
-    elif 270 < arr1[i-1,j-1] < 315 and -0.6 < arr2[i-1,j-1] <= 0:
+    elif 270 < arr1[i-1,j-1] < 315 and arr2[i-1,j-1] == 0:
         d += (arr1[i-1,j-1]-270)/45
     elif 315 <= arr1[i-1,j-1] and arr2[i-1,j-1] > 0:
         d += (arr2[i-1,j-1]+1)*((360-arr1[i-1,j-1])/45)
-    elif 315 <= arr1[i-1,j-1] and -0.6 < arr2[i-1,j-1] <= 0:
+    elif 315 <= arr1[i-1,j-1] and arr2[i-1,j-1] == 0:
         d += (360-arr1[i-1,j-1])/45
+    elif arr1[i-1,j-1] == -1:
+        pass
     else:
         return False
 
     # west
     if arr1[i,j-1] >= 45 and arr1[i,j-1] <= 315:
         pass
-    elif 0 <= arr1[i,j-1] < 45 and arr2[i,j-1] > 0:
+    elif  0 <= arr1[i,j-1] < 45 and arr2[i,j-1] > 0:
         d += (arr2[i,j-1]+1)*(1-(arr1[i,j-1]/45))
-    elif 0 <= arr1[i,j-1] < 45 and -0.6 < arr2[i,j-1] <= 0:
+    elif  0 <= arr1[i,j-1] < 45 and arr2[i,j-1] == 0:
         d += 1-(arr1[i,j-1]/45)
     elif 315 < arr1[i,j-1] and arr2[i,j-1] > 0:
         d += (arr2[i,j-1]+1)*((arr1[i,j-1]-315)/45)
-    elif 315 < arr1[i,j-1] and -0.6 < arr2[i,j-1] <= 0:
+    elif 315 < arr1[i,j-1] and arr2[i,j-1] == 0:
         d += (arr1[i,j-1]-315)/45
+    elif arr1[i,j-1] == -1:
+        pass
     else:
         return False
 
@@ -102,12 +112,14 @@ def ACM(arr1, arr2, i, j):
         pass
     elif arr1[i+1,j-1] < 45 and arr2[i+1,j-1] > 0:
         d += (arr2[i+1,j-1]+1)*(arr1[i+1,j-1]/45)
-    elif arr1[i+1,j-1] < 45 and -0.6 < arr2[i+1,j-1] <= 0:
+    elif arr1[i+1,j-1] < 45 and arr2[i+1,j-1] == 0:
         d += arr1[i+1,j-1]/45
     elif 45 <= arr1[i+1,j-1] < 90 and arr2[i+1,j-1] > 0:
         d += (arr2[i+1,j-1]+1)*((90-arr1[i+1,j-1])/45)
-    elif 45 <= arr1[i+1,j-1] < 90 and -0.6 < arr2[i+1,j-1] <= 0:
+    elif 45 <= arr1[i+1,j-1] < 90 and arr2[i+1,j-1] == 0:
         d += (90-arr1[i+1,j-1])/45
+    elif arr1[i+1,j-1] == -1:
+        pass
     else:
         return False
     
@@ -116,12 +128,14 @@ def ACM(arr1, arr2, i, j):
         pass
     elif 45 < arr1[i+1,j] < 90 and arr2[i+1,j] > 0:
         d += (arr2[i+1,j]+1)*((arr1[i+1,j]-45)/45)
-    elif 45 < arr1[i+1,j] < 90 and -0.6 < arr2[i+1,j] <= 0:
+    elif 45 < arr1[i+1,j] < 90 and arr2[i+1,j] == 0:
         d += (arr1[i+1,j]-45)/45
     elif 90 <= arr1[i+1,j] < 135 and arr2[i+1,j] > 0:
         d += (arr2[i+1,j]+1)*((135-arr1[i+1,j])/45)
-    elif 90 <= arr1[i+1,j] < 135 and -0.6 < arr2[i+1,j] <= 0:
+    elif 90 <= arr1[i+1,j] < 135 and arr2[i+1,j] == 0:
         d += (135-arr1[i+1,j])/45
+    elif arr1[i+1,j] == -1:
+        pass
     else:
         return False
 
@@ -130,23 +144,27 @@ def ACM(arr1, arr2, i, j):
         pass
     elif 90 < arr1[i+1,j+1] < 135 and arr2[i+1,j+1] > 0:
         d += (arr2[i+1,j+1]+1)*((arr1[i+1,j+1]-90)/45)
-    elif 90 < arr1[i+1,j+1] < 135 and -0.6 < arr2[i+1,j+1] <= 0:
+    elif 90 < arr1[i+1,j+1] < 135 and arr2[i+1,j+1] == 0:
         d += (arr1[i+1,j+1]-90)/45
     elif 135 <= arr1[i+1,j+1] < 180 and arr2[i+1,j+1] > 0:
         d += (arr2[i+1,j+1]+1)*((180-arr1[i+1,j+1])/45)
-    elif 135 <= arr1[i+1,j+1] < 180 and -0.6 < arr2[i+1,j+1] <= 0:
+    elif 135 <= arr1[i+1,j+1] < 180 and arr2[i+1,j+1] == 0:
         d += (180-arr1[i+1,j+1])/45
+    elif arr1[i+1,j+1] == -1:
+        pass
     else:
         return False
 
     return d
-        
+
+#Calculation
+#Zero        
 for i, j in np.argwhere(myarrayFD != -1):
     returnarrayFA[i][j] = Zero(myarrayFD, i, j)
 
+#Flow Accumration (?)
+
 loop = 0
-
-
 while np.argwhere(returnarrayFA == -1).size:
     for i, j in np.argwhere(returnarrayFA == -1):
         f = ACM(myarrayFD, returnarrayFA, i, j)
@@ -155,13 +173,16 @@ while np.argwhere(returnarrayFA == -1).size:
         else:
             pass
     loop += 1
-    if loop % 100 == 0:
+    if loop % 10 == 0:
         print(loop)
-    if loop == 1000:
+    if loop == 100:
         break
 
-pyplot.imshow(returnarrayFA, cmap=cm.cool)
+#Visualization
+cmap = cm.cool
+cmap_data = cmap(np.arange(cmap.N))
+cmap_data[0, 3] = 0
+custom_cool = colors.ListedColormap(cmap_data)
+pyplot.imshow(returnarrayFA, cmap=cmap)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
-
-print(np.argwhere(returnarrayFA == -1))

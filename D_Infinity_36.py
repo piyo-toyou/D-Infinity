@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib import pyplot, cm, colors
 from math import degrees, atan, pi, sqrt
 
-csv_path = "Nishiharamura_clip4DEM_5m_Fill.csv"
+csv_path = "Nishiharamura_DEM_5m_Fill.csv"
 df = pd.read_csv(csv_path, sep=",", header=0,index_col=0)
 myarray = df.values
 
@@ -252,7 +252,6 @@ def D8(t_area, t_idx, t_point, out_point): # 対象範囲全体、番号、座�
     return d8
 
 def Flat(dem, flag, dinf, i, j):
-    dem_copy = dem.copy()
     target_area = np.array((i, j))
     while True:
         flag_around = Around(flag, target_area)
@@ -285,8 +284,8 @@ def Flat(dem, flag, dinf, i, j):
             break
         target_area = np.vstack((target_area, GMI))
         for u, v in target_area:
-            dem_copy[u, v] = min_value # 窪地埋め処理
-        my_around = Around(dem_copy, target_area) # 対象領域の周囲を更新
+            dem[u, v] = min_value # 窪地埋め処理
+        my_around = Around(dem, target_area) # 対象領域の周囲を更新
         if (my_around < min_value).any(): # 周囲の点から流出点を探す
             print(i, j, p, "break")
             break
@@ -304,7 +303,6 @@ def Flat(dem, flag, dinf, i, j):
             flag[q2[0], q2[1]] = 0.75
 
 def Sink(dem, flag, dinf, i, j):
-    dem_copy = dem.copy()
     target_area = np.array((i, j))
     my_around = Around(dem, target_area)
     for p in range(100):
@@ -319,8 +317,8 @@ def Sink(dem, flag, dinf, i, j):
             break
         target_area = np.vstack((target_area, GMI))
         for u, v in target_area:
-            dem_copy[u, v] = min_value # 窪地埋め処理
-        my_around = Around(dem_copy, target_area) # 対象領域の周囲を更新
+            dem[u, v] = min_value # 窪地埋め処理
+        my_around = Around(dem, target_area) # 対象領域の周囲を更新
         if (my_around < min_value).any(): # 周囲の点から流出点を探す
             print(i, j, p, "break")
             break
@@ -371,11 +369,11 @@ cmap = cm.cool
 cmap_data = cmap(np.arange(cmap.N))
 cmap_data[0, 3] = 0
 custom_cool = colors.ListedColormap(cmap_data)
-pyplot.imshow(returnarrayF, cmap=custom_cool)
+pyplot.imshow(returnarrayD, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
 """
 out_df  = pd.DataFrame(returnarrayD)
-out_df.to_csv("Nishiharamura_FD_5m_35.csv", header=None, index=None)
+out_df.to_csv("Nishiharamura_FD_5m_36.csv", header=None, index=None)
 """
