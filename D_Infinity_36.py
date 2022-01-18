@@ -4,7 +4,7 @@ import pandas as pd
 from matplotlib import pyplot, cm, colors
 from math import degrees, atan, pi, sqrt
 
-csv_path = "Nishiharamura_DEM_5m_Fill.csv"
+csv_path = "Nishiharamura_Clip5DEM_5m_Fill.csv"
 df = pd.read_csv(csv_path, sep=",", header=0,index_col=0)
 myarray = df.values
 
@@ -369,7 +369,7 @@ cmap = cm.cool
 cmap_data = cmap(np.arange(cmap.N))
 cmap_data[0, 3] = 0
 custom_cool = colors.ListedColormap(cmap_data)
-pyplot.imshow(returnarrayD, cmap=custom_cool)
+pyplot.imshow(returnarrayF, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
