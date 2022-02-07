@@ -17,9 +17,9 @@ mazeXedge = np.min((goi[1], np.min(target_area.T[1])))
 mazeY1 = np.max((goi[0], np.max(target_area.T[0])))- mazeYedge + 1
 mazeX1 = np.max((goi[1], np.max(target_area.T[1])))- mazeXedge + 1
 maze = np.full((mazeY1, mazeX1), 9, dtype=np.int8)
+route = np.zeros((mazeY1, mazeX1), dtype=np.int8)
 for xy in target_area-np.array((mazeYedge, mazeXedge)): # 対象範囲を白抜き
-    i, j = xy
-    maze[i, j] = 0
+    maze[xy[0], xy[1]] = 0
 maze[goi[0]-mazeYedge, goi[1]-mazeXedge] = 1 # 流出点を設定
 maze = np.vstack((np.full((mazeX1,), 9), maze, np.full((mazeX1,), 9))) # 周囲を埋め
 maze = np.hstack((np.full((mazeY1+2,1), 9), maze, np.full((mazeY1+2,1), 9)))
