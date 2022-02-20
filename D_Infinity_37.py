@@ -367,21 +367,13 @@ while True:
     else:
         break
     Sink(myarray, returnarrayF, returnarrayD, i, j)
-    #Visualization
-    cmap = cm.cool
-    cmap_data = cmap(np.arange(cmap.N))
-    cmap_data[0, 3] = 0
-    custom_cool = colors.ListedColormap(cmap_data)
-    pyplot.imshow(returnarrayF, cmap=custom_cool)
-    pyplot.colorbar(shrink=.92)
-    pyplot.show()
 
 #Visualization
 cmap = cm.cool
 cmap_data = cmap(np.arange(cmap.N))
 cmap_data[0, 3] = 0
 custom_cool = colors.ListedColormap(cmap_data)
-pyplot.imshow(returnarrayD, cmap=custom_cool)
+pyplot.imshow(returnarrayF, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
