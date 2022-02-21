@@ -30,30 +30,30 @@ def Maze(pos, ml, rt):
             pos.append([y-1, x, depth + 1, 1000 * y + x])
             if rt[y-1][x] == 0:
                 rt[y-1][x] = 1000 * y + x
-        if ml[y-1][x-1] < 2:#左上
-            pos.append([y-1, x-1, depth + 1, 1000 * y + x])
-            if rt[y-1][x-1] == 0:
-                rt[y-1][x-1] = 1000 * y + x
         if ml[y+1][x] < 2:#下
             pos.append([y+1, x, depth + 1, 1000 * y + x])
             if rt[y+1][x] == 0:
                 rt[y+1][x] = 1000 * y + x
-        if ml[y+1][x-1] < 2:#左下
-            pos.append([y+1, x-1, depth + 1, 1000 * y + x])
-            if rt[y+1][x-1] == 0:
-                rt[y+1][x-1] = 1000 * y + x
-        if ml[y][x-1] < 2:#左
-            pos.append([y, x-1, depth + 1, 1000 * y + x])
-            if rt[y][x-1] == 0:
-                rt[y][x-1] = 1000 * y + x
         if ml[y][x+1] < 2:#右
             pos.append([y, x+1, depth + 1, 1000 * y + x])
             if rt[y][x+1] == 0:
                 rt[y][x+1] = 1000 * y + x
-        if ml[y-1][x+1] < 2:#右上
+        if ml[y][x-1] < 2:#左
+            pos.append([y, x-1, depth + 1, 1000 * y + x])
+            if rt[y][x-1] == 0:
+                rt[y][x-1] = 1000 * y + x
+        if ml[y+1][x-1] < 2:#左下
+            pos.append([y+1, x-1, depth + 1, 1000 * y + x])
+            if rt[y+1][x-1] == 0:
+                rt[y+1][x-1] = 1000 * y + x
+        if ml[y-1][x-1] < 2:#左上
             pos.append([y-1, x-1, depth + 1, 1000 * y + x])
             if rt[y-1][x-1] == 0:
                 rt[y-1][x-1] = 1000 * y + x
+        if ml[y-1][x+1] < 2:#右上
+            pos.append([y-1, x+1, depth + 1, 1000 * y + x])
+            if rt[y-1][x+1] == 0:
+                rt[y-1][x+1] = 1000 * y + x
         if ml[y+1][x+1] < 2:#右下
             pos.append([y+1, x+1, depth + 1, 1000 * y + x])
             if rt[y+1][x+1] == 0:
