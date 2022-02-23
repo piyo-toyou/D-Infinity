@@ -186,3 +186,8 @@ custom_cool = colors.ListedColormap(cmap_data)
 pyplot.imshow(returnarrayFA, cmap=cmap)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
+
+"""
+out_df  = pd.DataFrame(returnarrayFA)
+out_df.to_csv("Nishiharamura_FA_5m_31.csv", header=None, index=None)
+# """

@@ -351,10 +351,9 @@ def BFS(ta, goi, arrD):
             start_copy = copy.copy(start)
 
             result = Maze(start_copy, maze_list, route)  #探索
-            print(result)
             ReverseOrder(result, start, direction, route)
-            print("end")
         else:
+            print("BFS", ta, goi)
             print(direction)
             for ij in np.argwhere(maze == 0):
                 i, j = ij
@@ -444,8 +443,6 @@ def Sink(dem, flag, dinf, i, j):
         for q1, q2 in enumerate(target_area):
             dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
             flag[q2[0], q2[1]] = 1.75
-    print(i, j, GOI)
-
 
 
 #calculation
