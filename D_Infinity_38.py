@@ -267,38 +267,30 @@ def Maze(pos, ml, rt):
         ml[y][x] = 2
 
         #現在位置の上下左右を探索：〇<2は壁でもなく探索済みでもないものを示す
-        if ml[y-1][x] < 2:#上
+        if ml[y-1][x] < 2 and rt[y-1][x] == 0:#上
             pos.append([y-1, x, depth + 1, 1000 * y + x])
-            if rt[y-1][x] == 0:
-                rt[y-1][x] = 1000 * y + x
-        if ml[y+1][x] < 2:#下
+            rt[y-1][x] = 1000 * y + x
+        if ml[y+1][x] < 2 and rt[y+1][x] == 0:#下
             pos.append([y+1, x, depth + 1, 1000 * y + x])
-            if rt[y+1][x] == 0:
-                rt[y+1][x] = 1000 * y + x
-        if ml[y][x+1] < 2:#右
+            rt[y+1][x] = 1000 * y + x
+        if ml[y][x+1] < 2 and rt[y][x+1] == 0:#右
             pos.append([y, x+1, depth + 1, 1000 * y + x])
-            if rt[y][x+1] == 0:
-                rt[y][x+1] = 1000 * y + x
-        if ml[y][x-1] < 2:#左
+            rt[y][x+1] = 1000 * y + x
+        if ml[y][x-1] < 2 and rt[y][x-1] == 0:#左
             pos.append([y, x-1, depth + 1, 1000 * y + x])
-            if rt[y][x-1] == 0:
-                rt[y][x-1] = 1000 * y + x
-        if ml[y+1][x-1] < 2:#左下
+            rt[y][x-1] = 1000 * y + x
+        if ml[y+1][x-1] < 2 and rt[y+1][x-1] == 0:#左下
             pos.append([y+1, x-1, depth + 1, 1000 * y + x])
-            if rt[y+1][x-1] == 0:
-                rt[y+1][x-1] = 1000 * y + x
-        if ml[y-1][x-1] < 2:#左上
+            rt[y+1][x-1] = 1000 * y + x
+        if ml[y-1][x-1] < 2 and rt[y-1][x-1] == 0:#左上
             pos.append([y-1, x-1, depth + 1, 1000 * y + x])
-            if rt[y-1][x-1] == 0:
-                rt[y-1][x-1] = 1000 * y + x
-        if ml[y-1][x+1] < 2:#右上
+            rt[y-1][x-1] = 1000 * y + x
+        if ml[y-1][x+1] < 2 and rt[y-1][x+1] == 0:#右上
             pos.append([y-1, x+1, depth + 1, 1000 * y + x])
-            if rt[y-1][x+1] == 0:
-                rt[y-1][x+1] = 1000 * y + x
-        if ml[y+1][x+1] < 2:#右下
+            rt[y-1][x+1] = 1000 * y + x
+        if ml[y+1][x+1] < 2 and rt[y+1][x+1] == 0:#右下
             pos.append([y+1, x+1, depth + 1, 1000 * y + x])
-            if rt[y+1][x+1] == 0:
-                rt[y+1][x+1] = 1000 * y + x
+            rt[y+1][x+1] = 1000 * y + x
     return False
 
 def SimpleD8(p):
