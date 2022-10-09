@@ -253,8 +253,9 @@ def D8(t_area, t_idx, t_point, out_point): # 対象範囲全体、番号、座�
     return d8
 
 #探索関数：ゴールしたらそのときの位置・移動数を返す
+#2020/12/30 @Yuya Shimizu
 def Maze(pos, ml, rt):
-    #スタート位置（x座標, y座標, 移動回数）をセット
+    #スタート位置（y座標, x座標, 移動回数, 方向記憶）をセット
     while len(pos) > 0:#探索可能ならTrue
         y, x, depth, origin = pos.pop(0) #リストから探索する位置を取得
 
@@ -264,9 +265,13 @@ def Maze(pos, ml, rt):
             return [(y, x), depth, origin]
 
         #探索済みとしてセット
-        ml[y][x] = 2
+        if ml[y][x] == 0:
+            ml[y][x] = 2
+        elif ml[y][x] == 2:
+            continue
 
-        #現在位置の上下左右を探索：〇<2は壁でもなく探索済みでもないものを示す
+
+        #現在位置の上下左右と斜めを探索：〇<2は壁でもなく探索済みでもないものを示す
         if ml[y-1][x] < 2:#上
             pos.append([y-1, x, depth + 1, 1000 * y + x])
             if rt[y-1][x] == 0:
@@ -458,7 +463,7 @@ for x in args:  Dinfinity_Receive(x)
 while True:
     if np.argwhere(returnarrayF == 1).size:
         ij = np.argwhere(returnarrayF == 1)
-        i, j = ij[np.random.choice(ij.shape[0],1)][0]
+        i, j = ij[np.random.choice(ij.shape[0],1)][0] #任意の平地セルを対象として平地処理を繰り返す
     else:
         break
     Flat(myarray, returnarrayF, returnarrayD, i, j)
@@ -467,7 +472,7 @@ while True:
 while True:
     if np.argwhere(returnarrayF == 2).size:
         ij = np.argwhere(returnarrayF == 2)
-        i, j = ij[np.random.choice(ij.shape[0],1)][0]
+        i, j = ij[np.random.choice(ij.shape[0],1)][0] #任意の窪地セルを対象として窪地処理を繰り返す
     else:
         break
     Sink(myarray, returnarrayF, returnarrayD, i, j)
