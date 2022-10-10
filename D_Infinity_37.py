@@ -5,7 +5,7 @@ from matplotlib import pyplot, cm, colors
 from math import degrees, atan, pi, sqrt
 import copy
 
-csv_path = "Nishiharamura_Clip5DEM_5m_Fill.csv"
+csv_path = "Nishiharamura_DEM_5m_Fill.csv"
 df = pd.read_csv(csv_path, sep=",", header=0,index_col=0)
 myarray = df.values
 
@@ -27,9 +27,10 @@ def Around(arr, X):
         h_below = arr[i+1][j-1:j+2]
         return np.vstack((h_above, h_mid, h_below))
     else:
+        X_unipue = np.unique(X, axis=0)
         temp_around = np.arange(3)
-        for x1, x2 in enumerate(X):
-            X_d1 = X - X[x1] # 対象範囲との被りを検出
+        for x1, x2 in enumerate(X_unipue):
+            X_d1 = X_unipue - X_unipue[x1] # 対象範囲との被りを検出
             X_d2 = X_d1[np.all(-1<=X_d1, axis=1)]
             X_d3 = X_d2[np.all(X_d2<=1, axis=1)]
 
@@ -273,37 +274,37 @@ def Maze(pos, ml, rt):
 
         #現在位置の上下左右と斜めを探索：〇<2は壁でもなく探索済みでもないものを示す
         if ml[y-1][x] < 2:#上
-            pos.append([y-1, x, depth + 1, 1000 * y + x])
+            pos.append([y-1, x, depth + 1, 10000 * y + x])
             if rt[y-1][x] == 0:
-                rt[y-1][x] = 1000 * y + x
+                rt[y-1][x] = 10000 * y + x
         if ml[y+1][x] < 2:#下
-            pos.append([y+1, x, depth + 1, 1000 * y + x])
+            pos.append([y+1, x, depth + 1, 10000 * y + x])
             if rt[y+1][x] == 0:
-                rt[y+1][x] = 1000 * y + x
+                rt[y+1][x] = 10000 * y + x
         if ml[y][x+1] < 2:#右
-            pos.append([y, x+1, depth + 1, 1000 * y + x])
+            pos.append([y, x+1, depth + 1, 10000 * y + x])
             if rt[y][x+1] == 0:
-                rt[y][x+1] = 1000 * y + x
+                rt[y][x+1] = 10000 * y + x
         if ml[y][x-1] < 2:#左
-            pos.append([y, x-1, depth + 1, 1000 * y + x])
+            pos.append([y, x-1, depth + 1, 10000 * y + x])
             if rt[y][x-1] == 0:
-                rt[y][x-1] = 1000 * y + x
+                rt[y][x-1] = 10000 * y + x
         if ml[y+1][x-1] < 2:#左下
-            pos.append([y+1, x-1, depth + 1, 1000 * y + x])
+            pos.append([y+1, x-1, depth + 1, 10000 * y + x])
             if rt[y+1][x-1] == 0:
-                rt[y+1][x-1] = 1000 * y + x
+                rt[y+1][x-1] = 10000 * y + x
         if ml[y-1][x-1] < 2:#左上
-            pos.append([y-1, x-1, depth + 1, 1000 * y + x])
+            pos.append([y-1, x-1, depth + 1, 10000 * y + x])
             if rt[y-1][x-1] == 0:
-                rt[y-1][x-1] = 1000 * y + x
+                rt[y-1][x-1] = 10000 * y + x
         if ml[y-1][x+1] < 2:#右上
-            pos.append([y-1, x+1, depth + 1, 1000 * y + x])
+            pos.append([y-1, x+1, depth + 1, 10000 * y + x])
             if rt[y-1][x+1] == 0:
-                rt[y-1][x+1] = 1000 * y + x
+                rt[y-1][x+1] = 10000 * y + x
         if ml[y+1][x+1] < 2:#右下
-            pos.append([y+1, x+1, depth + 1, 1000 * y + x])
+            pos.append([y+1, x+1, depth + 1, 10000 * y + x])
             if rt[y+1][x+1] == 0:
-                rt[y+1][x+1] = 1000 * y + x
+                rt[y+1][x+1] = 10000 * y + x
     return False
 
 def SimpleD8(p):
@@ -317,7 +318,7 @@ def SimpleD8(p):
 
 def ReverseOrder(goal, st, dir, rt):
     ori_y, ori_x = goal[0][0], goal[0][1] # 元となる位置 origin
-    rev_y, rev_x = goal[2]//1000, goal[2]%1000 # 逆順を辿った位置 reverse
+    rev_y, rev_x = goal[2]//10000, goal[2]%10000 # 逆順を辿った位置 reverse
     while True:
         if rev_y == st[0][0] and rev_x == st[0][1]:
             relativ_position = [ori_y - st[0][0],ori_x - st[0][1]]
@@ -328,7 +329,7 @@ def ReverseOrder(goal, st, dir, rt):
         sd8 = SimpleD8(relativ_position)
         dir[rev_y][rev_x] = sd8
         ori_y, ori_x = rev_y, rev_x
-        rev_y, rev_x = rt[rev_y][rev_x]//1000, rt[rev_y][rev_x]%1000
+        rev_y, rev_x = rt[rev_y][rev_x]//10000, rt[rev_y][rev_x]%10000
 
 def BFS(ta, goi, arrD):
     mazeYedge = np.min((goi[0], np.min(ta.T[0])))
@@ -352,7 +353,7 @@ def BFS(ta, goi, arrD):
             route = maze.astype(np.int32) # 道順を格納する配列を初期化
             ij = np.argwhere(direction == 10)
             i, j = ij[np.random.choice(ij.shape[0],1)][0]
-            start = [[i, j, 0, 1000*i+j]]     #スタート位置
+            start = [[i, j, 0, 10000*i+j]]     #スタート位置
             start_copy = copy.copy(start)
 
             result = Maze(start_copy, maze_list, route)  #探索
@@ -486,7 +487,7 @@ pyplot.imshow(returnarrayD, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
-"""
+
 out_df  = pd.DataFrame(returnarrayD)
-out_df.to_csv("Nishiharamura_FD_5m_37.csv", header=None, index=None)
-# """
+out_df.to_csv("Nishiharamura_FD_5m_57.csv", header=None, index=None)
+

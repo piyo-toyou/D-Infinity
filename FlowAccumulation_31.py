@@ -11,7 +11,7 @@ import pandas as pd
 from matplotlib import pyplot, cm, colors
 
 #input parameters
-csv_path = "Nishiharamura_FD_5m_37.csv"
+csv_path = "Nishiharamura_FD_5m_38.csv"
 test_path = "C:/Users/S2212357/Documents/Z9_Training/QGIS/WaterFlow/FlowDirection/test_csv.csv"
 df = pd.read_csv(csv_path, sep=",", header=None, index_col=None)
 myarrayFD = df.values
@@ -187,7 +187,7 @@ pyplot.imshow(returnarrayFA, cmap=cmap)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
-"""
+
 out_df  = pd.DataFrame(returnarrayFA)
-out_df.to_csv("Nishiharamura_FA_5m_31.csv", header=None, index=None)
-# """
+out_df.to_csv("Nishiharamura_FA_5m_32.csv", header=None, index=None)
+
