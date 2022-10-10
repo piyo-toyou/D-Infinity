@@ -369,6 +369,7 @@ def BFS(ta, goi, arrD):
 def Flat(dem, flag, dinf, i, j):
     target_area = np.array((i, j))
     while True:
+        target_area = np.unique(target_area, axis=0)
         flag_around = Around(flag, target_area)
         if 1 in flag_around:
             flat_area = np.where(flag_around == 1)
@@ -423,6 +424,7 @@ def Sink(dem, flag, dinf, i, j):
     for p in range(1000):
         # 複数点を捉えるために、np.whereを使用する方が厳密
         # 対象領域周囲から、最小標高点を探す
+        target_area = np.unique(target_area, axis=0)
         min_value = np.min(my_around)
         min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
         if not p:   GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
