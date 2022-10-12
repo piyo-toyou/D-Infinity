@@ -369,7 +369,6 @@ def BFS(ta, goi, arrD):
 def Flat(dem, flag, dinf, i, j):
     target_area = np.array((i, j))
     while True:
-        target_area = np.unique(target_area, axis=0)
         flag_around = Around(flag, target_area)
         if 1 in flag_around:
             flat_area = np.where(flag_around == 1)
@@ -383,6 +382,7 @@ def Flat(dem, flag, dinf, i, j):
                 I = np.array((1, 1))
                 GFI = G + F - I # global flat index
                 target_area = np.vstack((target_area, GFI))
+            target_area = np.unique(target_area, axis=0)
         else:
             break
     if target_area.size >= 4:
@@ -424,7 +424,7 @@ def Sink(dem, flag, dinf, i, j):
     for p in range(1000):
         # 複数点を捉えるために、np.whereを使用する方が厳密
         # 対象領域周囲から、最小標高点を探す
-        target_area = np.unique(target_area, axis=0)
+        
         min_value = np.min(my_around)
         min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
         if not p:   GMI = np.array((i, j)) + min_idx - np.array((1, 1)) # global min index
@@ -439,6 +439,7 @@ def Sink(dem, flag, dinf, i, j):
         if (my_around < min_value).any(): # 周囲の点から流出点を探す
             print(i, j, p, "break Sink")
             break
+        target_area = np.unique(target_area, axis=0)
     out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
     GOI = target_area[out_idx[0]//3] + ((out_idx[0]%3, out_idx[1])) - np.array((1, 1)) # global out index
     try:
