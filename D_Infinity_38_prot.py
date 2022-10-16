@@ -5,7 +5,7 @@ from matplotlib import pyplot, cm, colors
 from math import degrees, atan, pi, sqrt
 import copy
 
-csv_path = "Nishiharamura_Clip5DEM_5m_Fill.csv"
+csv_path = "Nishiharamura_DEM_5m_Fill.csv"
 df = pd.read_csv(csv_path, sep=",", header=0,index_col=0)
 myarray = df.values
 
@@ -27,10 +27,11 @@ def Around(arr, X):
         h_below = arr[i+1][j-1:j+2]
         return np.vstack((h_above, h_mid, h_below))
     else:
-        X_unipue = np.unique(X, axis=0)
+        uniq_idx = np.unique(X, axis=0, return_index=True)[1]
+        X_unique = [X[uniq_idx] for uniq_idx in sorted(uniq_idx)]
         temp_around = np.arange(3)
-        for x1, x2 in enumerate(X_unipue):
-            X_d1 = X_unipue - X_unipue[x1] # 対象範囲との被りを検出
+        for x1, x2 in enumerate(X_unique):
+            X_d1 = X_unique - X_unique[x1] # 対象範囲との被りを検出
             X_d2 = X_d1[np.all(-1<=X_d1, axis=1)]
             X_d3 = X_d2[np.all(X_d2<=1, axis=1)]
 
@@ -492,5 +493,5 @@ pyplot.show()
 
 
 # out_df  = pd.DataFrame(returnarrayD)
-# out_df.to_csv("Nishiharamura_FD_5m_57.csv", header=None, index=None)
+# out_df.to_csv("Nishiharamura_FD_5m_39.csv", header=None, index=None)
 
