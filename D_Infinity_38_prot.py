@@ -434,13 +434,13 @@ def Sink(dem, flag, dinf, i, j):
             print(i, j, p, "edge break Sink")
             break
         target_area = np.vstack((target_area, GMI))
+        target_area = np.unique(target_area, axis=0)
         for u, v in target_area:
             dem[u, v] = min_value # 窪地埋め処理
         my_around = Around(dem, target_area) # 対象領域の周囲を更新
         if (my_around < min_value).any(): # 周囲の点から流出点を探す
             print(i, j, p, "break Sink")
             break
-        target_area = np.unique(target_area, axis=0)
     out_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
     GOI = target_area[out_idx[0]//3] + ((out_idx[0]%3, out_idx[1])) - np.array((1, 1)) # global out index
     try:
@@ -492,6 +492,6 @@ pyplot.colorbar(shrink=.92)
 pyplot.show()
 
 
-# out_df  = pd.DataFrame(returnarrayD)
-# out_df.to_csv("Nishiharamura_FD_5m_39.csv", header=None, index=None)
+out_df  = pd.DataFrame(returnarrayD)
+out_df.to_csv("Nishiharamura_FD_5m_57.csv", header=None, index=None)
 
