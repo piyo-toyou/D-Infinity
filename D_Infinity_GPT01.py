@@ -8,6 +8,7 @@ csv_path = "Nishiharamura_DEM_5m_Fill.csv"
 df = pd.read_csv(csv_path, sep=",", header=0, index_col=0)
 myarray = df.values
 
+# 配列の諸元を整理
 cell_size_x = 5
 cell_size_y = 5
 cell_size_xy = sqrt(pow(cell_size_x, 2) + pow(cell_size_y, 2))
@@ -45,7 +46,7 @@ def Around(input_array, X):
             temp_around = np.vstack((temp_around, h_marge))
         return temp_around[1:]
 
-def Flag(input_array, i, j):
+def set_flag(input_array, i, j):
     if i-1 >= 0 and j-1 >= 0 and i+1 < Ysize and j+1 < Xsize:
         if (Around(input_array, np.array((i, j))) < np.array((-999))).any():
             return np.nan
@@ -63,28 +64,36 @@ def Flag(input_array, i, j):
     else:
         return np.nan
 
-def calculate_slope_and_flow(s1, s2, s0, dtan):
-    if s1 > 0:
-        r_temp = atan(s2 / s1)
+def calculate_slope_and_flow(slope1, slope2, slope0, dtan):
+    if slope1 > 0:
+        r_temp = atan(slope2 / slope1)
         if r_temp > dtan:
             slope_degree = dtan
-            flow_direction = s0
+            flow_direction = slope0
         elif r_temp > 0:
             slope_degree = r_temp
-            flow_direction = sqrt(pow(s1, 2) + pow(s2, 2))
+            flow_direction = sqrt(pow(slope1, 2) + pow(slope2, 2))
         else:
             slope_degree = 0.00
-            flow_direction = s1
+            flow_direction = slope1
     else:
-        if s0 > 0:
+        if slope0 > 0:
             slope_degree = dtan
-            flow_direction = s0
+            flow_direction = slope0
         else:
             slope_degree = 0.00
-            flow_direction = s1
+            flow_direction = slope1
     return slope_degree, flow_direction
 
 def calculate_dInfinity(ij, input_array):
+    """
+    通常セルの計算関数
+    Args:
+        ij: 入力座標値
+        input_array: 入力配列
+    Returns:
+        出力座標値と、その傾斜量、流向を返す。
+    """
     i, j = ij
     try:
         b = [[0, 1], [1, -1], [1, 1], [2, -1], [2, 1], [3, -1], [3, 1], [4, -1]]
@@ -139,22 +148,34 @@ def calculate_dInfinity(ij, input_array):
         print(f"Error occurred at index ({i}, {j}): {e}")
         return {"i":i, "j":j, "sd":np.nan, "fd":np.nan}
 
-def D8(t_area, t_idx, t_point, out_point): # 対象範囲全体、番号、座標と、流出点座標
-    out_check = out_point - t_point
+def direction8(target_region, target_index, target_point, outflow_point):
+    """
+    流れの向きを8方位で返す関数
+    target_region: 対象領域を表す2次元配列
+    target_index: 対象領域のインデックスを表す整数
+    target_point: 対象点の座標を表すタプル
+    outflow_point: 流出点の座標を表すタプル
+
+    Returns:
+    0、45、90、135、180、225、270、315のいずれかを返す。
+    """
+
+    out_check = outflow_point - target_point
     if -1 <= out_check[0] <= 1 and -1 <= out_check[1] <= 1:
         t = np.squeeze(out_check)
     else:
-        T_d1 = np.delete(t_area, t_idx, 0) # target diffrence
-        T_d1 = T_d1 - t_point
-        T_d1 = T_d1[np.all(-1<=T_d1, axis=1)]
-        T_d1 = T_d1[np.all(T_d1<=1, axis=1)] # 隣接する範囲を探索
-        if T_d1.size == 2: # 1箇所と接する場合
-            t = np.squeeze(T_d1)
+        target_difference = np.delete(target_region, target_index, 0) # target diffrence
+        target_difference = target_difference - target_point
+        target_difference = target_difference[np.all(-1<=target_difference, axis=1)]
+        target_difference = target_difference[np.all(target_difference<=1, axis=1)] # 隣接する範囲を探索
+        if target_difference.size == 2: # 1箇所と接する場合
+            t = np.squeeze(target_difference)
         else: # 複数個所と接する場合
-            GT_d1 = T_d1 + t_point # global target diffrence
-            GT_d2 = GT_d1 - out_point
-            GT_d3 = np.array([np.linalg.norm(i) for i in GT_d2]) # 流出点への距離を算出
-            t = T_d1[np.argmin(GT_d3)] # 最も距離が短くなる隣接点に流す
+            global_target_difference = target_difference + target_point
+            global_target_difference = global_target_difference - outflow_point
+            global_target_difference = np.array([np.linalg.norm(i) for i in global_target_difference]) # 流出点への距離を算出
+            t = target_difference[np.argmin(global_target_difference)] # 最も距離が短くなる隣接点に流す
+    # tを基に流向を計算
     if t[0] == -1:
         d8 = 90 + t[1] * -45
     elif t[0] == 0:
@@ -163,85 +184,99 @@ def D8(t_area, t_idx, t_point, out_point): # 対象範囲全体、番号、座�
         d8 = 270 + t[1] * 45
     return d8
 
-def SimpleD8(p):
+def simple_direction8(p):
+    # 0、45、90、135、180、225、270、315のいずれかを返す。
     if p[0] == -1:
-        SD8 = 90 + p[1] * -45
+        sd8 = 90 + p[1] * -45
     elif p[0] == 0:
-        SD8 = 90 + p[1] * -90
+        sd8 = 90 + p[1] * -90
     else:
-        SD8 = 270 + p[1] * 45
-    return SD8
+        sd8 = 270 + p[1] * 45
+    return sd8
 
-#探索関数：ゴールしたらそのときの位置・移動数を返す
 #2020/12/30 @Yuya Shimizu
-def Maze(pos, ml, rt):
+def find_route(starts, maze_layout, route):
+    """
+    迷路を解く関数
+    Args:
+        starts: スタート位置の座標 (y座標, x座標)
+        maze_layout: 迷路の配置を表す2次元リスト
+        route: スタート位置から各座標までの最短ルートを格納する2次元リスト
+    Returns:
+        ゴール位置の座標、移動回数、移動方向のリスト。解がない場合はFalseを返す。
+    """
     #スタート位置（y座標, x座標, 移動回数, 方向記憶）をセット
-    while len(pos) > 0:#探索可能ならTrue
-        y, x, depth, origin = pos.pop(0) #リストから探索する位置を取得
+    while len(starts) > 0:#探索可能ならTrue
+        y, x, depth, origin = starts.pop(0) #リストから探索する位置を取得
 
         #ゴールについた時点で終了
-        if ml[y][x] == 1:
-            rt[y][x] = origin
+        if maze_layout[y][x] == 1:
+            route[y][x] = origin
             return [(y, x), depth, origin]
 
         #探索済みとしてセット
-        if ml[y][x] == 0:
-            ml[y][x] = 2
-        elif ml[y][x] == 2:
+        if maze_layout[y][x] == 0:
+            maze_layout[y][x] = 2
+        elif maze_layout[y][x] == 2:
             continue
 
-
         #現在位置の上下左右と斜めを探索：〇<2は壁でもなく探索済みでもないものを示す
-        if ml[y-1][x] < 2:#上
-            pos.append([y-1, x, depth + 1, 10000 * y + x])
-            if rt[y-1][x] == 0:
-                rt[y-1][x] = 10000 * y + x
-        if ml[y+1][x] < 2:#下
-            pos.append([y+1, x, depth + 1, 10000 * y + x])
-            if rt[y+1][x] == 0:
-                rt[y+1][x] = 10000 * y + x
-        if ml[y][x+1] < 2:#右
-            pos.append([y, x+1, depth + 1, 10000 * y + x])
-            if rt[y][x+1] == 0:
-                rt[y][x+1] = 10000 * y + x
-        if ml[y][x-1] < 2:#左
-            pos.append([y, x-1, depth + 1, 10000 * y + x])
-            if rt[y][x-1] == 0:
-                rt[y][x-1] = 10000 * y + x
-        if ml[y+1][x-1] < 2:#左下
-            pos.append([y+1, x-1, depth + 1, 10000 * y + x])
-            if rt[y+1][x-1] == 0:
-                rt[y+1][x-1] = 10000 * y + x
-        if ml[y-1][x-1] < 2:#左上
-            pos.append([y-1, x-1, depth + 1, 10000 * y + x])
-            if rt[y-1][x-1] == 0:
-                rt[y-1][x-1] = 10000 * y + x
-        if ml[y-1][x+1] < 2:#右上
-            pos.append([y-1, x+1, depth + 1, 10000 * y + x])
-            if rt[y-1][x+1] == 0:
-                rt[y-1][x+1] = 10000 * y + x
-        if ml[y+1][x+1] < 2:#右下
-            pos.append([y+1, x+1, depth + 1, 10000 * y + x])
-            if rt[y+1][x+1] == 0:
-                rt[y+1][x+1] = 10000 * y + x
+        if maze_layout[y-1][x] < 2:#上
+            starts.append([y-1, x, depth + 1, 10000 * y + x])
+            if route[y-1][x] == 0:
+                route[y-1][x] = 10000 * y + x
+        if maze_layout[y+1][x] < 2:#下
+            starts.append([y+1, x, depth + 1, 10000 * y + x])
+            if route[y+1][x] == 0:
+                route[y+1][x] = 10000 * y + x
+        if maze_layout[y][x+1] < 2:#右
+            starts.append([y, x+1, depth + 1, 10000 * y + x])
+            if route[y][x+1] == 0:
+                route[y][x+1] = 10000 * y + x
+        if maze_layout[y][x-1] < 2:#左
+            starts.append([y, x-1, depth + 1, 10000 * y + x])
+            if route[y][x-1] == 0:
+                route[y][x-1] = 10000 * y + x
+        if maze_layout[y+1][x-1] < 2:#左下
+            starts.append([y+1, x-1, depth + 1, 10000 * y + x])
+            if route[y+1][x-1] == 0:
+                route[y+1][x-1] = 10000 * y + x
+        if maze_layout[y-1][x-1] < 2:#左上
+            starts.append([y-1, x-1, depth + 1, 10000 * y + x])
+            if route[y-1][x-1] == 0:
+                route[y-1][x-1] = 10000 * y + x
+        if maze_layout[y-1][x+1] < 2:#右上
+            starts.append([y-1, x+1, depth + 1, 10000 * y + x])
+            if route[y-1][x+1] == 0:
+                route[y-1][x+1] = 10000 * y + x
+        if maze_layout[y+1][x+1] < 2:#右下
+            starts.append([y+1, x+1, depth + 1, 10000 * y + x])
+            if route[y+1][x+1] == 0:
+                route[y+1][x+1] = 10000 * y + x
     return False
 
-def ReverseOrder(goal, st, dir, rt):
-    ori_y, ori_x = goal[0][0], goal[0][1] # 元となる位置 origin
-    rev_y, rev_x = goal[2]//10000, goal[2]%10000 # 逆順を辿った位置 reverse
+def ReverseOrder(goal, start, direction, route):
+    """
+    流出点までを逆順で辿る関数
+    """
+    origin_y, origin_x = goal[0][0], goal[0][1] # 元となる位置 origin
+    reverse_y, reverse_x = goal[2]//10000, goal[2]%10000 # 逆順を辿った位置 reverse
     while True:
-        if rev_y == st[0][0] and rev_x == st[0][1]:
-            relativ_position = [ori_y - st[0][0],ori_x - st[0][1]]
-            sd8 = SimpleD8(relativ_position)
-            dir[rev_y][rev_x] = sd8
+        if reverse_y == start[0][0] and reverse_x == start[0][1]:
+            relativ_position = [origin_y - start[0][0],origin_x - start[0][1]]
+            sd8 = simple_direction8(relativ_position)
+            direction[reverse_y][reverse_x] = sd8
             break
-        relativ_position = [ori_y - rev_y, ori_x - rev_x]
-        sd8 = SimpleD8(relativ_position)
-        dir[rev_y][rev_x] = sd8
-        ori_y, ori_x = rev_y, rev_x
-        rev_y, rev_x = rt[rev_y][rev_x]//10000, rt[rev_y][rev_x]%10000
+        relativ_position = [origin_y - reverse_y, origin_x - reverse_x]
+        sd8 = simple_direction8(relativ_position)
+        direction[reverse_y][reverse_x] = sd8
+        origin_y, origin_x = reverse_y, reverse_x
+        reverse_y, reverse_x = route[reverse_y][reverse_x]//10000, route[reverse_y][reverse_x]%10000
 
 def BFS(ta, goi, arrD):
+    """
+    幅優先探索を行う関数
+    """
     mazeYedge = np.min((goi[0], np.min(ta.T[0])))
     mazeXedge = np.min((goi[1], np.min(ta.T[1])))
     mazeY1 = np.max((goi[0], np.max(ta.T[0])))- mazeYedge + 1
@@ -266,7 +301,7 @@ def BFS(ta, goi, arrD):
             start = [[i, j, 0, 10000*i+j]]     #スタート位置
             start_copy = copy.copy(start)
 
-            result = Maze(start_copy, maze_list, route)  #探索
+            result = find_route(start_copy, maze_list, route)  #探索
             ReverseOrder(result, start, direction, route)
         else:
             print("BFS", ta, goi)
@@ -277,8 +312,17 @@ def BFS(ta, goi, arrD):
             break
 
 def calculate_flat(dem, flag, dinf, i, j):
+    """
+    平地セルを計算する関数
+    Args:
+        dem: 数値標高モデル
+        flag: flag配列
+        dinf: 更新するための流向配列
+    Returns:
+        流向配列を更新して返す。
+    """
     target_area = np.array((i, j))
-    while True:
+    while True: # 対象セルに接する平地を全て抽出
         flag_around = Around(flag, target_area)
         if 1 in flag_around:
             flat_area = np.where(flag_around == 1)
@@ -305,7 +349,7 @@ def calculate_flat(dem, flag, dinf, i, j):
         min_idx = np.unravel_index(np.argmin(my_around), my_around.shape)
         if target_area.size == 2:   GMI = target_area + min_idx - np.array((1, 1)) # global min index
         else:       GMI = target_area[min_idx[0]//3] + ((min_idx[0]%3, min_idx[1])) - np.array((1, 1))
-        if 0 in GMI or Ysize-1 == GMI[0] or Xsize-1 == GMI[1]:
+        if 0 in GMI or Ysize-1 == GMI[0] or Xsize-1 == GMI[1]: # 配列の端に到達したら終了
             print(i, j, p, "edge break Flat")
             break
         target_area = np.vstack((target_area, GMI))
@@ -325,7 +369,7 @@ def calculate_flat(dem, flag, dinf, i, j):
         GOI = target_area + out_idx - np.array((1, 1))
         target_area = target_area[np.newaxis, :]
         for q1, q2 in enumerate(target_area):
-            dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
+            dinf[q2[0], q2[1]] = direction8(target_area, q1, q2, GOI)
             flag[q2[0], q2[1]] = 0.75
 
 def calculate_sink(dem, flag, dinf, i, j):
@@ -360,21 +404,21 @@ def calculate_sink(dem, flag, dinf, i, j):
         GOI = target_area + out_idx - np.array((1, 1))
         target_area = target_area[np.newaxis, :]
         for q1, q2 in enumerate(target_area):
-            dinf[q2[0], q2[1]] = D8(target_area, q1, q2, GOI)
+            dinf[q2[0], q2[1]] = direction8(target_area, q1, q2, GOI)
             flag[q2[0], q2[1]] = 1.75
 
 # Calculation
 #Flag
 for i, j in np.ndindex(myarray.shape):
-    returnarrayF[i][j] = Flag(myarray, i, j)
-print("calculate flag; done.")
+    returnarrayF[i][j] = set_flag(myarray, i, j)
+print("calculate flag: done.")
 
 #Regular cells
 args = map(lambda ij: calculate_dInfinity(ij, input_array=myarray), np.argwhere(returnarrayF == 0))
 for result in args:
     i, j = result["i"], result["j"]
     returnarrayS[i][j], returnarrayD[i][j] = result["sd"], result["fd"]
-print("calculate dInfinity; done.")
+print("calculate dInfinity: done.")
 
 #Flat cells
 while True:
@@ -384,7 +428,7 @@ while True:
     else:
         break
     calculate_flat(myarray, returnarrayF, returnarrayD, i, j)
-print("calculate flat; done.")
+print("calculate flat: done.")
 
 #Sink cells
 while True:
@@ -394,7 +438,7 @@ while True:
     else:
         break
     calculate_sink(myarray, returnarrayF, returnarrayD, i, j)
-print("calculate sink; done.")
+print("calculate sink: done.")
 
 # Visualization
 cmap = cm.cool
@@ -405,5 +449,6 @@ pyplot.imshow(returnarrayD, cmap=custom_cool)
 pyplot.colorbar(shrink=.92)
 pyplot.show()
 
-# out_df = pd.DataFrame(returnarrayD)
-# out_df.to_csv("Nishiharamura_FD_5m_GPT01.csv", header=None, index=None)
+# Save array
+out_df = pd.DataFrame(returnarrayD)
+out_df.to_csv("Nishiharamura_FD_5m_GPT01.csv", header=None, index=None)
